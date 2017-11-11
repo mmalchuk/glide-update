@@ -1,0 +1,13 @@
+package: github.com/mmalchuk/glide-update
+import:
+- package: github.com/google/go-querystring
+  version: 53e6ce116135b80d037921a7fdd5138cf32d7a8a
+  repo: https://gitlab.com/glide-mirror/github-com-google-go-querystring.git
+  subpackages:
+  - query
+- package: github.com/xanzy/go-gitlab
+  version: 32211f6ae06b961bf512cf18e8b58c5a7ea4727f
+  repo: https://gitlab.com/glide-mirror/github-com-xanzy-go-gitlab.git
+- package: gopkg.in/yaml.v2
+  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
+  repo: https://gitlab.com/glide-mirror/gopkg-in-yaml-v2.git
