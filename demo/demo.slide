@@ -1,0 +1,223 @@
+Go Dependency Management
+Development with limited Internet connectivity
+11 Nov 2017
+Tags: foo, bar, baz
+
+Maksim Malchuk
+Senior Software Engineer, NetCracker Inc.
+https://malchuk.ru/
+
+* Package Management Tools in Go
+
+.link https://github.com/golang/go/wiki/PackageManagementTools
+
+- 'go get' and "no life" before Go 1.5
+- Go 1.5 with GO15VENDOREXPERIMENT
+- Go 1.6 GO15VENDOREXPERIMENT is default
+- ...
+- Go 1.9 ? 'go dep' ?
+
+.link https://github.com/golang/dep
+
+  dep is the official experiment, but not yet the official tool
+
+- looking for the tool?
+- best tool? hm...
+
+* Glide: Vendor Package Management for Golang
+
+.link https://github.com/Masterminds/glide
+
+  Are you used to tools such as Cargo, npm, Composer, Nuget, Pip, Maven, Bundler, or other modern
+  package managers? If so, Glide is the comparable Go tool.
+
+  The Go community now has the dep project to manage dependencies.
+  Please consider trying to migrate from Glide to dep.
+
+.image chto-delat.jpg
+
+dep ??? moment... but the dep is an experiment?
+
+* Working with Glide
+
+* 
+
+- get source code and cleanup after 'go get'
+
+  $ go get -d github.com/mmalchuk/glide-update
+
+  github.com/xanzy/go-gitlab (download)
+  github.com/google/go-querystring (download)
+  Fetching https://gopkg.in/yaml.v2?go-get=1
+  Parsing meta tags from https://gopkg.in/yaml.v2?go-get=1 (status code 200)
+  get "gopkg.in/yaml.v2": found meta tag get.metaImport{Prefix:"gopkg.in/yaml.v2", VCS:"git", RepoRoot:"https://gopkg.in/yaml.v2"} at https://gopkg.in/yaml.v2?go-get=1
+  gopkg.in/yaml.v2 (download)
+  gopkg.in/yaml.v2
+  github.com/google/go-querystring/query
+  github.com/xanzy/go-gitlab
+  github.com/mmalchuk/glide-update
+
+  $ rm -rf "$GOPATH/src/github.com/xanzy"
+  $ rm -rf "$GOPATH/src/github.com/google"
+  $ rm -rf "$GOPATH/src/gopkg.in"
+
+- cleanup working files
+
+  $ cd "$GOPATH/src/github.com/mmalchuk/glide-update"
+  $ rm -fv glide.yaml glide.lock
+  $ rm -rf vendor/
+
+* 
+
+- initialize a new project, creating a glide.yaml file
+
+  $ glide init --non-interactive
+
+  [INFO] Generating a YAML configuration file and guessing the dependencies
+  [INFO] Attempting to import from other package managers (use --skip-import to skip)
+  [INFO] Scanning code to look for dependencies
+  [INFO] --> Found reference to github.com/xanzy/go-gitlab
+  [INFO] --> Found reference to gopkg.in/yaml.v2
+  [INFO] Writing configuration file (glide.yaml)
+  [INFO] You can now edit the glide.yaml file. Consider:
+  [INFO] --> Using versions and ranges. See https://glide.sh/docs/versions/
+  [INFO] --> Adding additional metadata. See https://glide.sh/docs/glide.yaml/
+  [INFO] --> Running the config-wizard command to improve the versions in your configuration
+
+* 
+
+- update vendor directory with dependencies
+
+  $ glide update --strip-vendor
+
+  [INFO] Downloading dependencies. Please wait...
+  [INFO] --> Fetching updates for gopkg.in/yaml.v2
+  [INFO] --> Fetching updates for github.com/xanzy/go-gitlab
+  [INFO] Resolving imports
+  [INFO] --> Fetching updates for github.com/google/go-querystring
+  [INFO] Downloading dependencies. Please wait...
+  [INFO] Setting references for remaining imports
+  [INFO] Exporting resolved dependencies...
+  [INFO] --> Exporting github.com/google/go-querystring
+  [INFO] --> Exporting github.com/xanzy/go-gitlab
+  [INFO] --> Exporting gopkg.in/yaml.v2
+  [INFO] Replacing existing vendor dependencies
+  [INFO] Project relies on 3 dependencies.
+  [INFO] Removing nested vendor and Godeps/_workspace directories...
+
+* 
+
+- and results
+
+  $ cat glide.yaml
+
+  package: github.com/mmalchuk/glide-update
+  import:
+  - package: github.com/xanzy/go-gitlab
+  - package: gopkg.in/yaml.v2
+
+  $ tree -d vendor/
+
+  vendor/
+  ├── github.com
+  │   ├── google
+  │   │   └── go-querystring
+  │   │       └── query
+  │   └── xanzy
+  │       └── go-gitlab
+  │           └── examples
+  └── gopkg.in
+      └── yaml.v2
+
+  9 directories
+
+* 
+
+- from workplace
+
+  $ go build -v
+
+  github.com/mmalchuk/glide-update/vendor/github.com/google/go-querystring/query
+  github.com/mmalchuk/glide-update/vendor/gopkg.in/yaml.v2
+  github.com/mmalchuk/glide-update/vendor/github.com/xanzy/go-gitlab
+  github.com/mmalchuk/glide-update
+
+  $ git add glide.yaml
+  $ git push
+
+- on CI server
+
+  $ git clone https://github.com/mmalchuk/glide-update
+  $ cd glide-update
+  $ glide install --strip-vendor
+  $ go build -v
+
+* SUCCESS ?
+
+.image thumbs-up.png
+
+* ENTERPRISE (or real life)
+
+.image no-internet.png
+
+- fail because: CI servers do not have internet connectivity
+- security: please provide the list of URLs you want to connect
+
+* ENTERPRISE (or real life)
+
+* 
+
+- what is glide-update and how to use it
+
+  $ rm -fv glide.*
+  $ rm -rf verdor/
+
+  $ ./glide-update https://gitlab.netcracker.com glide-mirror PriVateToKen
+
+  ...
+  Reading 'glide.lock' file...
+  Parsing file...
+  - processing 'github.com/google/go-querystring'
+  - found local cache repo '/Users/mmalchuk/.glide/cache/src/https-github.com-google-go-querystring'
+  - remote repo 'https://gitlab.netcracker.com/glide-mirror/github-com-google-go-querystring.git' already exists
+  - push all branches:
+  Everything up-to-date
+  - push all tags:
+  Everything up-to-date
+  - updated with upstream: 'https://gitlab.netcracker.com/glide-mirror/github-com-google-go-querystring.git'
+  ...
+  Created glide.yaml with 3 repos.
+
+* 
+
+- results?
+
+  $ cat glide.yaml
+
+  package: github.com/mmalchuk/glide-update
+  import:
+  - package: github.com/google/go-querystring
+    version: 53e6ce116135b80d037921a7fdd5138cf32d7a8a
+    repo: https://gitlab.netcracker.com/glide-mirror/github-com-google-go-querystring.git
+    subpackages:
+    - query
+  - package: github.com/xanzy/go-gitlab
+    version: 32211f6ae06b961bf512cf18e8b58c5a7ea4727f
+    repo: https://gitlab.netcracker.com/glide-mirror/github-com-xanzy-go-gitlab.git
+  - package: gopkg.in/yaml.v2
+    version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
+    repo: https://gitlab.netcracker.com/glide-mirror/gopkg-in-yaml-v2.git
+
+- each package have pinned version (git hash)
+- we have a mirrored packages in the local gitlab
+- CI server have access to the loacal gitlab so build would succeed
+
+* SUCCESS !!!
+
+.image thumbs-up.png
+
+* 
+
+.image qestions.png
+
+
